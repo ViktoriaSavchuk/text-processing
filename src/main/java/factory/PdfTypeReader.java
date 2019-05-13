@@ -11,6 +11,7 @@ import java.io.IOException;
 
 public class PdfTypeReader implements Readable {
 
+
     private static final Logger LOGGER = LogManager.getLogger(PdfTypeReader.class);
 
     @Override
