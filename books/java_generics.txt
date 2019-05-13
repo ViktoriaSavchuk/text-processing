@@ -1,0 +1,164 @@
+Preface...
+Java now supports .generics, the most significant change to the language since the ad-
+dition of inner classes in Java 1.2—some would say the most significant change to the
+language ever.
+Say you wish to process lists. Some may be lists of integers, others lists of strings, and
+yet others lists of lists of strings. In Java before generics this is simple. You can represent
+all three by the same class, called List , which has elements of class Object :
+list of integers List
+list of strings List
+list of lists of strings List
+In order to keep the language simple, you are forced to do some of the work yourself:
+you must keep track of the fact that you have a list of integers (or strings or lists of
+strings), and when you extract an element from the list you must cast it from Object
+back to Integer (or String or List ). For instance, the Collections Framework before
+generics made extensive use of this idiom.
+Einstein is reputed to have said, “Everything should be as simple as possible but no
+simpler”. And some might say the approach above is too simple. In Java with generics
+you may distinguish different types of lists:
+list of integers List<Integer>
+list of strings List<String>
+list of lists of strings List<List<String>>
+Now the compiler keeps track of whether you have a list of integers (or strings or lists
+of strings), and no explicit cast back to Integer (or String or List<String> ) is required.
+In some ways, this is similar to generics in Ada or templates in C++, but the actual
+inspiration is parametric polymorphism as found in functional languages such as ML
+and Haskell.
+Part I of this book provides a thorough introduction to generics. We discuss the inter-
+actions between generics and subtyping, and how to use wildcards and bounds; we
+xidescribe techniques for evolving your code; we explain subtleties connected with casts
+and arrays; we treat advanced topics such as the interaction between generics and se-
+curity, and how to maintain binary compatibility; and we update common design pat-
+terns to exploit generics.
+Much has been written on generics, and their introduction into Java has sparked some
+controversy. Certainly, the design of generics involves swings and roundabouts: making
+it easy to evolve code requires that objects not reify run-time information describing
+generic type parameters, but the absence of this information introduces corner cases
+into operations such as casting and array creation.We present a balanced treatment of
+generics, explaining how to exploit their strengths and work around their weaknesses.
+Part II provides a comprehensive introduction to the Collections Framework. Newton
+is reputed to have said, “If I have seen farther than others, it is because I stand on the
+shoulders of giants”. The best programmers live by this motto, building on existing
+frameworks and reusable code wherever appropriate. The Java Collections Framework
+provides reusable interfaces and implementations for a number of common collection
+types, including lists, sets, queues, and maps. There is also a framework for comparing
+values, which is useful in sorting or building ordered trees. (Of course, not all pro-
+grammers exploit reuse. As Hamming said of computer scientists, “Instead of standing
+on each other’s shoulders, we stand on each other’s toes.”)
+Thanks to generics, code using collections is easier to read and the compiler will catch
+more type errors. Further, collections provide excellent illustrations of the use of ge-
+nerics. One might say that generics and collections were made for each other, and,
+indeed, ease of use of collections was one of the main reasons for introducing generics
+in the first place.
+Java 5 and 6 not only update the Collections Framework to exploit generics, but also
+enhance the framework in other ways, introducing interfaces and classes to support
+concurrency and the new enum types. We believe that these developments mark the
+beginning of a shift in programming style, with heavier use of the Collections Frame-
+work and, in particular, increased use of collections in favor of arrays. In Part II, we
+describe the entire framework from first principles in order to help you use collections
+more effectively, flagging the new features of Java 5 and 6 as we present them.
+Following common terminology, we refer to the successive versions of Java as 1.0 up
+to 1.4 and then 5 and 6. We say ‘Java before generics’ to refer to Java 1.0 through 1.4,
+and ‘Java with generics’ to refer to Java 5 and 6.
+The design of generics for Java is influenced by a number of previous proposals—
+notably, GJ, by Bracha, Odersky, Stoutamire, and Wadler; the addition of wildcards
+to GJ, proposed by Igarashi and Viroli; and further development of wildcards, by Tor-
+gersen, Hansen, Ernst, von der Ahé, Bracha, and Gafter. Design of generics was carried
+out under the Java Community Process by a team led by Bracha, and including Odersky,
+Thorup, and Wadler (as parts of JSR 14 and JSR 201). Odersky’s GJ compiler is the
+basis of Sun’s current javac compiler.
+xii | PrefaceObtaining the Example Programs
+Some of the example programs in this book are available online at:
+ftp://ftp.oreilly.com/published/oreilly/javagenerics
+If you can’t get the examples directly over the Internet but can send and receive email,
+you can use ftpmail to get them. For help using ftpmail, send an email to
+ftpmail@online.oreilly.com
+with no subject and the single word “help” in the body of the message.
+How to Contact Us
+You can address comments and questions about this book to the publisher:
+O’Reilly Media, Inc.
+1005 Gravenstein Highway North
+Sebastopol, CA 95472
+(800) 998-9938 (in the United States or Canada)
+(707) 829-0515 (international/local)
+(707) 829-0104 (fax)
+O’Reilly has a web page for this book, which lists errata and any additional information.
+You can access this page at:
+http://www.oreilly.com/catalog/javagenerics
+To comment or ask technical questions about this book, send email to:
+bookquestions@oreilly.com
+For more information about books, conferences, software, Resource Centers, and the
+O’Reilly Network, see the O’Reilly web site at:
+http://www.oreilly.com
+Conventions Used in This Book
+We use the following font and format conventions:
+• Code is shown in a fixed-width font, with boldface used for emphasis:
+class Client {
+public static void main(String[] args) {
+Stack<Integer> stack = new ArrayStack<Integer>();
+for (int i = 0; i<4; i++) stack.push(i);
+assert stack.toString().equals("stack[0, 1, 2, 3]");
+}
+}
+Preface | xiii• We often include code that corresponds to the body of an appropriate main method:
+Stack<Integer> stack = new ArrayStack<Integer>();
+for (int i = 0; i<4; i++) stack.push(i);
+assert stack.toString().equals("stack[0, 1, 2, 3]");
+• Code fragments are printed in fixed-width font when they appear within a para-
+graph (as when we referred to a main method in the preceding item).
+• We often omit standard imports. Code that uses the Java Collection Framework
+or other utility classes should be preceded by the line:
+import java.util.*;
+• Sample interactive sessions, showing command-line input and corresponding out-
+put, are shown in constant-width font, with user-supplied input preceded by a
+percent mark:
+% javac g/Stack.java g/ArrayStack.java g/Stacks.java l/Client.java
+Note: Client.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+• When user-supplied input is two lines long, the first line is ended with a backslash:
+% javac -Xlint:unchecked g/Stack.java g/ArrayStack.java \
+%
+g/Stacks.java l/Client.java
+l/Client.java:4: warning: [unchecked] unchecked call
+to push(E) as a member of the raw type Stack
+for (int i = 0; i<4; i++) stack.push(new Integer(i));
+Using Code Examples
+This book is here to help you get your job done. In general, you may use the code in
+this book in your programs and documentation. You do not need to contact us for
+permission unless you’re reproducing a significant portion of the code. For example,
+writing a program that uses several chunks of code from this book does not require
+permission. Selling or distributing a CD-ROM of examples from O’Reilly books does
+require permission. Answering a question by citing this book and quoting example
+code does not require permission. Incorporating a significant amount of example code
+from this book into your product’s documentation does require permission.
+We appreciate, but do not require, attribution. An attribution usually includes the title,
+author, publisher, and ISBN. For example: "Java Generics and Collections, by Maurice
+Naftalin and Philip Wadler. Copyright 2006 O’Reilly Media, Inc., 0-596-52775-6.”
+If you feel your use of code examples falls outside fair use or the permission given above,
+feel free to contact us at permissions@oreilly.com.
+xiv | PrefaceSafari® Books Online
+When you see a Safari® Books Online icon on the cover of your favorite
+technology book, that means the book is available online through the
+O’Reilly Network Safari Bookshelf.
+Safari offers a solution that’s better than e-books. It’s a virtual library that lets you easily
+search thousands of top tech books, cut and paste code samples, download chapters,
+and find quick answers when you need the most accurate, current information. Try it
+for free at http://safari.oreilly.com.
+Acknowledgments
+The folks at Sun (past and present) were fantastically good about answering our ques-
+tions. They were always happy to explain a tricky point or mull over a design tradeoff.
+Thanks to Joshua Bloch, Gilad Bracha, Martin Buchholz, Joseph D. Darcy, Neal M.
+Gafter, Mark Reinhold, David Stoutamire, Scott Violet, and Peter von der Ahé.
+It has been a pleasure to work with work the following researchers, who contributed to the
+design of generics for Java: Erik Ernst, Christian Plesner Hansen, Atsushi Igarashi,
+Martin Odersky, Mads Torgersen, and Mirko Viroli?
+We received comments and help from a number of people. Thanks to Brian Goetz,
+David Holmes, Heinz M. Kabutz, Deepti Kalra, Angelika Langer, Stefan Liebeg, Doug
+Lea, Tim Munro, Steve Murphy, and C K Shibin.
+We enjoyed reading Heinz M. Kabutz’s The Java Specialists’ Newsletter and Angelika
+Langer’s Java Generics FAQ, both available online.
+Our editor, Michael Loukides,was always ready with good advice. Paul C. Anagnos-
+topoulos ofWindfall Software turned our LATEX into camera-ready copy, and Jere-
+myYallop produced the index.
+Our families kept us sane (and insane). Love to Adam, Ben, Catherine, Daniel, Isaac,
+Joe, Leora, Lionel, and Ruth.
